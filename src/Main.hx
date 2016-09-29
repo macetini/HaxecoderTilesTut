@@ -9,6 +9,7 @@ import openfl.display.Tilemap;
 import openfl.display.Tileset;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
+import openfl.geom.Point;
 import openfl.geom.Rectangle;
 
 /**
@@ -72,9 +73,14 @@ class Main extends Sprite
 	
 	public function init() 
 	{
-		if (_inited) return;
+		if (_inited) 
+		{
+			return;
+		}
+		
 		_inited = true;
 		
+
 		initTileset();
 		
 		initTerrain();		
@@ -87,8 +93,7 @@ class Main extends Sprite
 		
 		initKeyboardListeners();
 		
-		var fps_mem:FPS_Mem = new FPS_Mem(10, 10, 0x000000);
-		addChild(fps_mem);
+		addProfiler();
 	}
 	
 	private function initTileset(): Void
@@ -152,7 +157,12 @@ class Main extends Sprite
 	
 	private function everyFrame(evt:Event):Void
 	{
-		_character.move(_keysHeld);
+		var move:Point = _character.move(_keysHeld);
+		
+		//trace("x: " + move.x + " y: " + move.y);
+		
+		TileCollisionDetector.detect(_map, _character.position, move, _tileSize);
+		
 		drawEntities();
 	}	
 	
@@ -179,5 +189,11 @@ class Main extends Sprite
 	private function keyUp(evt:KeyboardEvent):Void 
 	{
 		_keysHeld[evt.keyCode] = false;
+	}
+	
+	private function addProfiler(): Void
+	{
+		var fps_mem:FPS_Mem = new FPS_Mem(10, 10, 0x000000);
+		addChild(fps_mem);
 	}
 }

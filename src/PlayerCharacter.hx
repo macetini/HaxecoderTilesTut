@@ -68,39 +68,40 @@ class PlayerCharacter extends TileEntity
 		return [position.x, position.y, tile];
 	}
 	
-	public function move(keysHeld:Array<Bool>): Void
+	public function move(keysHeld:Array<Bool>): Point
 	{
+		var move:Point = new Point();
+		
 		if (keysHeld[38]) 
 		{
 			face(Up);
-			//animate();
-			position.y -= movementSpeed;
+			move.y -= movementSpeed;
 		}
 		else if (keysHeld[39]) 
 		{
 			face(Right);
-			//animate();
-			position.x += movementSpeed;
+			move.x += movementSpeed;
 		}
 		else if (keysHeld[40]) 
 		{
 			face(Down);
-			//animate();
-			position.y += movementSpeed;
+			move.y += movementSpeed;
 		} 
 		else if (keysHeld[37]) 
 		{
 			face(Left);
-			//animate();
-			position.x -= movementSpeed;
+			move.x -= movementSpeed;
 		}
 		else 
 		{	
 			resetAnim();
-			return;
+			
+			return move;
 		}
 		
 		animate();
+		
+		return move;
 	}
 	
 	private function face(dir:Direction):Void
