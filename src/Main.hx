@@ -75,6 +75,8 @@ class Main extends Sprite
 		if (_inited) return;
 		_inited = true;
 		
+		initTileset();
+		
 		initTerrain();		
 		drawTerrain();
 		
@@ -83,24 +85,25 @@ class Main extends Sprite
 		//Game loop
 		stage.addEventListener(Event.ENTER_FRAME, everyFrame);
 		
-		_keysHeld = new Array<Bool>();
-		stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
-		stage.addEventListener(KeyboardEvent.KEY_UP, keyUp);
+		initKeyboardListeners();
 		
 		var fps_mem:FPS_Mem = new FPS_Mem(10, 10, 0x000000);
 		addChild(fps_mem);
+	}
+	
+	private function initTileset(): Void
+	{
+		var tilesBitmapData:BitmapData = Assets.getBitmapData("img/set.png");
+		
+		_tileset = new Tileset(tilesBitmapData);
+		_tileset.addRect(new Rectangle(0, 0, 32, 32));
+		_tileset.addRect(new Rectangle(32, 0, 32, 32));
 	}
 	
 	private function initTerrain(): Void
 	{
 		_terrainCanvas = new Sprite();
 		addChild(_terrainCanvas);
-		
-		var tilesBitmapData:BitmapData = Assets.getBitmapData("img/set.png");
-		
-		_tileset = new Tileset(tilesBitmapData);
-		_tileset.addRect(new Rectangle(0, 0, 32, 32));
-		_tileset.addRect(new Rectangle(32, 0, 32, 32));
 
 		_terrainTilemap = new Tilemap(stage.stageWidth, stage.stageHeight, _tileset);
 		_terrainCanvas.addChild(_terrainTilemap);
@@ -138,6 +141,13 @@ class Main extends Sprite
 		
 		_entities = new Array<TileEntity>();
 		_entities.push(_character);
+	}
+	
+	private function initKeyboardListeners(): Void
+	{
+		_keysHeld = new Array<Bool>();
+		stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
+		stage.addEventListener(KeyboardEvent.KEY_UP, keyUp);
 	}
 	
 	private function everyFrame(evt:Event):Void

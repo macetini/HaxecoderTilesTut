@@ -24,9 +24,9 @@ class PlayerCharacter extends TileEntity
 	private var faceLeft:Array<Int>;
 	
 	private var direction:Array<Int>;
-	private var step:Int;
 	
 	private var walkingAnimation:Array<Int>;
+	private var walkAnimStepper:AnimationStepper;
 	
 	public var position:Point;
 	public var movementSpeed:Int;
@@ -56,15 +56,15 @@ class PlayerCharacter extends TileEntity
 		
 		position = new Point(128, 128);
 		direction = faceDown;
-		step = 0;
 		
-		walkingAnimation = [0, 1, 0, 2];
+		walkAnimStepper = new AnimationStepper([0, 1, 0, 2], 5);
+		
 		movementSpeed = 3;
 	}
 	
 	override public function draw():Array<Float> 
 	{
-		var tile:Int = direction[walkingAnimation[step]];
+		var tile:Int = direction[walkAnimStepper.getFrame()];
 		return [position.x, position.y, tile];
 	}
 	
@@ -73,34 +73,37 @@ class PlayerCharacter extends TileEntity
 		if (keysHeld[38]) 
 		{
 			face(Up);
-			animate();
+			//animate();
 			position.y -= movementSpeed;
 		}
 		else if (keysHeld[39]) 
 		{
 			face(Right);
-			animate();
+			//animate();
 			position.x += movementSpeed;
 		}
 		else if (keysHeld[40]) 
 		{
 			face(Down);
-			animate();
+			//animate();
 			position.y += movementSpeed;
 		} 
 		else if (keysHeld[37]) 
 		{
 			face(Left);
-			animate();
+			//animate();
 			position.x -= movementSpeed;
 		}
 		else 
 		{	
 			resetAnim();
+			return;
 		}
+		
+		animate();
 	}
 	
-	public function face(dir:Direction):Void
+	private function face(dir:Direction):Void
 	{
 		switch(dir) 
 		{
@@ -118,18 +121,13 @@ class PlayerCharacter extends TileEntity
 		}
 	}
 	
-	public function resetAnim():Void
+	private function resetAnim():Void
 	{
-		step = 0;
+		walkAnimStepper.reset();
 	}
 	
-	public function animate():Void
+	private function animate():Void
 	{
-		step++;
-		
-		if (step == walkingAnimation.length)
-		{
-			step = 0;
-		}
+		walkAnimStepper.animate();
 	}
 }
