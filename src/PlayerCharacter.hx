@@ -64,8 +64,40 @@ class PlayerCharacter extends TileEntity
 	
 	override public function draw():Array<Float> 
 	{
-		var tile:Int = direction[step];
+		var tile:Int = direction[walkingAnimation[step]];
 		return [position.x, position.y, tile];
+	}
+	
+	public function move(keysHeld:Array<Bool>): Void
+	{
+		if (keysHeld[38]) 
+		{
+			face(Up);
+			animate();
+			position.y -= movementSpeed;
+		}
+		else if (keysHeld[39]) 
+		{
+			face(Right);
+			animate();
+			position.x += movementSpeed;
+		}
+		else if (keysHeld[40]) 
+		{
+			face(Down);
+			animate();
+			position.y += movementSpeed;
+		} 
+		else if (keysHeld[37]) 
+		{
+			face(Left);
+			animate();
+			position.x -= movementSpeed;
+		}
+		else 
+		{	
+			resetAnim();
+		}
 	}
 	
 	public function face(dir:Direction):Void

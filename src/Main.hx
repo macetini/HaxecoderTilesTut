@@ -1,37 +1,100 @@
 package;
 
-
+import flash.Lib;
+import openfl.Assets;
+import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.display.Tile;
 import openfl.display.Tilemap;
 import openfl.display.Tileset;
 import openfl.events.Event;
-import openfl.Assets;
+import openfl.events.KeyboardEvent;
 import openfl.geom.Rectangle;
-import openfl.display.BitmapData;
-
 
 /**
  * ...
- * @author 
+ * @author Kirill Poletaev
  */
+
 class Main extends Sprite 
 {
+	private var _inited:Bool;
+	
 	private var _tileset:Tileset;
-	private var _tilemap:Tilemap;
+	
+	private var _terrainTilemap:Tilemap;
+	private var _entitesTilemap:Tilemap;
 
 	private var _tileSize:Int;
 	
 	private var _map:Array<Array<Int>>;
 	
-	private var entities:Array<TileEntity>;
-	private var character:PlayerCharacter;
+	private var _entities:Array<TileEntity>;
+	private var _character:PlayerCharacter;
 	
-	private var keysHeld:Array<Bool>;
+	private var _keysHeld:Array<Bool>;
 	
+	private var _terrainCanvas:Sprite;
+	private var _entitiesCanvas:Sprite;
+	
+	/* SETUP */
+
 	public function new() 
 	{
-		super();
+		super();	
+		addEventListener(Event.ADDED_TO_STAGE, added);
+	}
+
+	function added(e) 
+	{
+		removeEventListener(Event.ADDED_TO_STAGE, added);
+		stage.addEventListener(Event.RESIZE, resize);
+		#if ios
+		haxe.Timer.delay(init, 100); // iOS 6
+		#else
+		init();
+		#end
+	}
+	
+	public static function main() 
+	{
+		// static entry point
+		Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;
+		Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
+		Lib.current.addChild(new Main());
+	}
+	
+	function resize(e) 
+	{
+		if (!_inited) init();
+		// else (resize or orientation change)
+	}
+	
+	public function init() 
+	{
+		if (_inited) return;
+		_inited = true;
+		
+		initTerrain();		
+		drawTerrain();
+		
+		initEntities();
+		
+		//Game loop
+		stage.addEventListener(Event.ENTER_FRAME, everyFrame);
+		
+		_keysHeld = new Array<Bool>();
+		stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
+		stage.addEventListener(KeyboardEvent.KEY_UP, keyUp);
+		
+		var fps_mem:FPS_Mem = new FPS_Mem(10, 10, 0x000000);
+		addChild(fps_mem);
+	}
+	
+	private function initTerrain(): Void
+	{
+		_terrainCanvas = new Sprite();
+		addChild(_terrainCanvas);
 		
 		var tilesBitmapData:BitmapData = Assets.getBitmapData("img/set.png");
 		
@@ -39,15 +102,16 @@ class Main extends Sprite
 		_tileset.addRect(new Rectangle(0, 0, 32, 32));
 		_tileset.addRect(new Rectangle(32, 0, 32, 32));
 
-		_tilemap = new Tilemap(stage.stageWidth, stage.stageHeight, _tileset);
-		addChild(_tilemap);
+		_terrainTilemap = new Tilemap(stage.stageWidth, stage.stageHeight, _tileset);
+		_terrainCanvas.addChild(_terrainTilemap);
 		
 		_tileSize = 32;
-		
 		_map = new Array<Array<Int>>();
-		
 		TileMap.create(_map);
-		
+	}
+	
+	private function drawTerrain(): Void
+	{
 		var tile:Tile;
 		
 		//Tearain
@@ -56,33 +120,54 @@ class Main extends Sprite
 			for (cell in 0..._map[row].length)
 			{
 				tile = new Tile(_map[row][cell], _tileSize * cell, _tileSize * row);
-				_tilemap.addTile(tile);
+				_terrainTilemap.addTile(tile);
 			}
 		}
+	}
+	
+	private function initEntities():Void 
+	{
+		_entitesTilemap = new Tilemap(stage.stageWidth, stage.stageHeight, _tileset);
 		
-		character = new PlayerCharacter(_tileset);
+		_entitiesCanvas = new Sprite();		
+		_entitiesCanvas.addChild(_entitesTilemap);
 		
-		entities = new Array<TileEntity>();
-		entities.push(character);
+		addChild(_entitiesCanvas);
 		
-		// Entities
-		var entityData:Array<Float>;
-		for (entity in entities)
-		{
-			entityData = entity.draw();
-			tile = new Tile( cast (entityData[2], Int), entityData[0], entityData[1]);
-			_tilemap.addTile(tile);
-		}
+		_character = new PlayerCharacter(_tileset);
 		
-		//Game loop
-		stage.addEventListener(Event.ENTER_FRAME, everyFrame);
-		
-		var fps_mem:FPS_Mem = new FPS_Mem(10, 10, 0x000000);
-		addChild(fps_mem);
+		_entities = new Array<TileEntity>();
+		_entities.push(_character);
 	}
 	
 	private function everyFrame(evt:Event):Void
 	{
-		
+		_character.move(_keysHeld);
+		drawEntities();
 	}	
+	
+	private function drawEntities():Void 
+	{
+		var tile:Tile;
+		
+		_entitesTilemap.removeTiles();
+		
+		var entityData:Array<Float>;
+		for (entity in _entities)
+		{
+			entityData = entity.draw();
+			tile = new Tile( cast (entityData[2], Int), entityData[0], entityData[1]);
+			_entitesTilemap.addTile(tile);
+		}
+	}
+	
+	private function keyDown(evt:KeyboardEvent):Void 
+	{
+		_keysHeld[evt.keyCode] = true;
+	}
+	
+	private function keyUp(evt:KeyboardEvent):Void 
+	{
+		_keysHeld[evt.keyCode] = false;
+	}
 }
