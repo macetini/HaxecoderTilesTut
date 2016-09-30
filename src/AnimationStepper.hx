@@ -17,17 +17,18 @@ class AnimationStepper
 	{
 		this.frames = frames;
 		this.frameDelay = frameDelay;
+		frameCounter = 0;
+		step = 0;
+	}
+	
+	public function reset():Void 
+	{
 		step = 0;
 		frameCounter = 0;
 	}
 	
-	public function reset():Void {
-		step = 0;
-		frameCounter = 0;
-	}
-	
-	public function animate():Void {
-		
+	public function animate():Void 
+	{	
 		if (frameCounter >= 0) 
 		{
 			frameCounter = -frameDelay;
@@ -44,7 +45,8 @@ class AnimationStepper
 		}
 	}
 	
-	public function getFrame():Int {
+	public function getFrame():Int 
+	{
 		return frames[step];
 	}
 	
