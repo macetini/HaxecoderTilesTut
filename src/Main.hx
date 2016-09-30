@@ -80,7 +80,6 @@ class Main extends Sprite
 		
 		_inited = true;
 		
-
 		initTileset();
 		
 		initTerrain();		
@@ -146,6 +145,12 @@ class Main extends Sprite
 		
 		_entities = new Array<TileEntity>();
 		_entities.push(_character);
+		
+		_entities.push(new Flag(10, 10, _tileSize, _tileset, _entities));
+		_entities.push(new Flag(2, 2, _tileSize, _tileset, _entities));
+		_entities.push(new Flag(4, 12, _tileSize, _tileset, _entities));
+		_entities.push(new Flag(22, 10, _tileSize, _tileset, _entities));
+		_entities.push(new Flag(20, 3, _tileSize, _tileset, _entities));
 	}
 	
 	private function initKeyboardListeners(): Void
@@ -163,6 +168,9 @@ class Main extends Sprite
 		
 		TileCollisionDetector.detect(_map, _character.position, move, _tileSize);
 		
+		// player-flag collisions
+		detectFlagCoallision();
+		
 		drawEntities();
 	}	
 	
@@ -178,6 +186,22 @@ class Main extends Sprite
 			entityData = entity.draw();
 			tile = new Tile( cast (entityData[2], Int), entityData[0], entityData[1]);
 			_entitesTilemap.addTile(tile);
+		}
+	}
+	
+	private function detectFlagCoallision():Void
+	{
+		for (entity in _entities) 
+		{
+			if (Std.is(entity, Flag)) 
+			{
+				var flag:Flag = cast(entity, Flag);
+				
+				if (Point.distance(_character.position, flag.position) <= flag.radius) 
+				{
+					flag.collide(_character);
+				}
+			}
 		}
 	}
 	

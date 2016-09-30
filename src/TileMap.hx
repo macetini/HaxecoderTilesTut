@@ -2,7 +2,7 @@ package;
 
 /**
  * ...
- * @author 
+ * @author Kirill Poletaev
  */
 class TileMap
 {
